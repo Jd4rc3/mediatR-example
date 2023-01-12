@@ -33,8 +33,8 @@ public class TokenCommandHandler : IRequestHandler<TokenCommand, TokenCommandRes
 
         var claims = new List<Claim>
         {
-            new (ClaimTypes.Sid, user.Id),
-            new (ClaimTypes.Name, user.UserName)
+            new Claim(ClaimTypes.Sid, user.Id),
+            new Claim(ClaimTypes.Name, user.UserName)
         };
 
         foreach (var role in roles)
@@ -42,15 +42,14 @@ public class TokenCommandHandler : IRequestHandler<TokenCommand, TokenCommandRes
             claims.Add(new Claim(ClaimTypes.Role, role));
         }
 
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jtw:Key"]));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
         var tokenDescriptor = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
             expires: DateTime.Now.AddMinutes(720),
-            signingCredentials: credentials
-        );
+            signingCredentials: credentials);
 
         var jwt = new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
 
