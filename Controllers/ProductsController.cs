@@ -1,10 +1,12 @@
 using MediatR;
 using MediatrExample.Features.Products.Commands;
 using MediatrExample.Features.Products.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MediatrExample.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/products")]
 public class ProductsController : ControllerBase
@@ -16,19 +18,11 @@ public class ProductsController : ControllerBase
         _mediator = mediator;
     }
 
-    /// <summary>
-    /// Consulta los productos
-    /// </summary>
-    /// <returns></returns>
     [HttpGet]
     public Task<List<GetProductsQueryResponse>> GetProducts() => _mediator.Send(new GetProductsQuery());
 
-    /// <summary>
-    /// Crea un producto nuevo
-    /// </summary>
-    /// <param name="command"></param>
-    /// <returns></returns>
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
     {
         await _mediator.Send(command);
@@ -36,11 +30,6 @@ public class ProductsController : ControllerBase
         return Ok();
     }
 
-    /// <summary>
-    /// Consulta un producto por su ID
-    /// </summary>
-    /// <param name="query"></param>
-    /// <returns></returns>
     [HttpGet("{ProductId}")]
     public Task<GetProductQueryResponse> GetProductById([FromRoute] GetProductQuery query) =>
         _mediator.Send(query);
